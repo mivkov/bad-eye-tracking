@@ -1,13 +1,12 @@
-# Identify pupils. Based on beta 1
+# Inspired and changed from https://gist.github.com/edfungus/67c14af0d5afaae5b18c
 
 import numpy as np
 import cv2
-import time
 import math
-import os
 
 def capturePupil(cxpts):
     '''
+    :param: cxpts, the
     spawns the pupil movement tracker and runs it
     :return: nothing
     '''
@@ -24,6 +23,7 @@ def capturePupil(cxpts):
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
             eyes = cv2.CascadeClassifier('haarcascade_eye.xml')
+            #  https://github.com/Itseez/opencv/blob/master/data/haarcascades/haarcascade_eye.xml originally
             detected = eyes.detectMultiScale(frame, 1.3, 5)
 
             frame = cv2.bilateralFilter(frame, 11, 17, 17)
@@ -87,11 +87,7 @@ def capturePupil(cxpts):
                     for cnt in contours:
                         rect = cv2.boundingRect(cnt)
                         area = rect[0]*rect[1]
-                        radius = rect[1] / 2
                         sizeRate = 1.0 * rect[1] / len(pupilFrame[0])
-                        # if 0.25<=sizeRate<=0.41:
-                        #     print "area is {}, rect is {}, radius is {}, sizeRate is {}".format(area, rect, radius, sizeRate)
-
                         if sizeRate >= 0.25 and sizeRate <= 0.41 and\
                             rect[0] != 0 and\
                             math.fabs(1 - 1.0*rect[1]/rect[0]) <= 0.5 and\
@@ -105,19 +101,11 @@ def capturePupil(cxpts):
 
                     print(int(np.interp(cx, cxpts, xpts)))
 
-                    #print "cx is {}, cy is {}".format(cx, cy)
                     cv2.circle(pupilO, (cx, cy), 5, 255, -1)
 
-            # show picture
-            cv2.imshow('frame', pupilO)
-            # cv2.imshow('frame2', pupilFrame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-                # else:
-                # break
-
-    # Release everything if job is finished
     cap.release()
     cv2.destroyAllWindows()
 
@@ -149,7 +137,6 @@ def calibrate():
             windowOpen = np.ones((2, 2), np.uint8)
             windowErode = np.ones((2, 2), np.uint8)
 
-            # draw square
             for (x, y, w, h) in detected:
 
                 cv2.rectangle(frame, (x, y), ((x + w), (y + h)), (0, 0, 255), 1)
@@ -202,9 +189,6 @@ def calibrate():
                         area = rect[0] * rect[1]
                         radius = rect[1] / 2
                         sizeRate = 1.0 * rect[1] / len(pupilFrame[0])
-                        # if 0.25<=sizeRate<=0.41:
-                        #     print "area is {}, rect is {}, radius is {}, sizeRate is {}".format(area, rect, radius, sizeRate)
-
                         if sizeRate >= 0.25 and sizeRate <= 0.41 and \
                                         rect[0] != 0 and \
                                         math.fabs(1 - 1.0 * rect[1] / rect[0]) <= 0.5 and \
@@ -215,8 +199,6 @@ def calibrate():
                 if largeBlob is not None and largeBlob.any() and len(largeBlob) > 0:
                     center = cv2.moments(largeBlob)
                     cx, cy = int(center['m10'] / center['m00']), int(center['m01'] / center['m00'])
-                    # print "cx is {}, cy is {}".format(cx, cy)
-                    # print(cx)
                     numcount += 1
                     if lravg == []:
                         lravg.append(cx)
@@ -228,15 +210,8 @@ def calibrate():
                     if(numcount == 3):
                         return [lravg[0]/3,lravg[1]/3]
 
-            # show picture
-            # cv2.imshow('frame', pupilO)
-            # cv2.imshow('frame2', pupilFrame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-                # else:
-                # break
-
-    # Release everything if job is finished
     cap.release()
     cv2.destroyAllWindows()
