@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>test</title>
+		<meta charset = "utf-8"/>
+		<link rel="stylesheet" type="text/css" href="/css/gameScreen.css">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+			function changeCanvasSize() {
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				var canv = document.getElementById("gameCanvas");
+				canv.height = h - 15;
+				canv.width = w - 15;
+			}
+
+			var brickRowCount = 3;
+			var brickColumnCount = 15;
+			var brickWidth = 75;
+			var brickHeight = 20;
+			var brickPadding = 10;
+			var brickOffsetTop = 30;
+			var brickOffsetLeft = 30;
+
+			var bricks = [];
+			for(c=0; c<brickColumnCount; c++) {
+			    bricks[c] = [];
+			    for(r=0; r<brickRowCount; r++) {
+			        bricks[c][r] = { x: 0, y: 0, status: 1 };
+			    }
+			}
+
+			function drawBricks() {
+			    for(c=0; c<brickColumnCount; c++) {
+			        for(r=0; r<brickRowCount; r++) {
+			            if(bricks[c][r].status == 1) {
+			                var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+			                var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+			                bricks[c][r].x = brickX;
+			                bricks[c][r].y = brickY;
+			                ctx.beginPath();
+			                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+			                ctx.fillStyle = "#D2B4DE";
+			                ctx.fill();
+			                ctx.closePath();
+			            }
+			        }
+			    }
+			}
+
+			var canv;
+			var ctx;
+
+			var x;
+			var y;
+			var paddleHeight = 10;
+			var paddleWidth = 200;
+			var paddleOffset = 20;
+			var paddleX;
+			var dx = 1;
+			var dy = 1;
+			var ballRad = 7.5;
+
+			var gameOver = false;
+
+			var eyeX = 50;
+
+			var requestSent = false;
+
+			function drawBall() {
+				ctx.beginPath();
+				ctx.arc(x, y, ballRad, 0, Math.PI*2);
+				ctx.fillStyle = '#85C1E9';
+				ctx.fill();
+				ctx.closePath();
+			}
+
+			function drawPaddle() {
+			    ctx.beginPath();
+			    ctx.rect(paddleX, canv.height-paddleHeight-paddleOffset, paddleWidth, paddleHeight);
+			    ctx.fillStyle = "#566573";
+			    ctx.fill();
+			    ctx.closePath();
+			}
+
+			function calcPaddleVelocity() {
+				var displacement = (2*Math.abs(eyeX - paddleX) / (canv.width / 10)) + 1;
+				if(paddleX < eyeX && paddleX < canv.width-paddleWidth) {
+					paddleX += displacement;
+				} else {
+					paddleX -= displacement;
+				}
+			}
+
+			function collisionDetection() {
+			    for(c=0; c<brickColumnCount; c++) {
+			        for(r=0; r<brickRowCount; r++) {
+			            var b = bricks[c][r];
+			            if(b.status == 1) {
+			                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+			                    dy = -dy;
+			                    b.status = 0;
+			                }
+			            }
+			        }
+			    }
+			}
+
+			function mouseMoveHandler(e) {
+				eyeX = canv.width - e.clientX;
+			}
+
+			function requestEye(callback) {
+				$.ajax({
+					url: document.URL+"/data",
+					type: "GET",
+					dataType: "json",
+					complete: function() {
+						console.log('process complete');
+					},
+					success: function(responseJson) {
+						eyeX = responseJson.xcoord;
+						console.log('process success');
+						console.log('***response is', responseJson.xcoord);
+						callback();
+					},
+					error: function() {
+						console.log('process error');
+					}
+				})
+			}
+
+			var runRequest = false;
+
+			function drawGame() {
+				ctx.clearRect(0, 0, canv.width, canv.height);
+
+				requestEye();
+
+				calcPaddleVelocity();
+
+				drawPaddle();
+				drawBall();
+				drawBricks();
+				collisionDetection();
+
+
+				x += dx;
+				y += dy;
+
+				if(x + dx > canv.width-ballRad || x + dx < ballRad) {
+    				dx = -dx;
+				}
+
+				if(y + dy < ballRad) {
+				    dy = -dy;
+				} else if(y + dy > canv.height-ballRad-paddleOffset-paddleHeight && (y + dy < canv.height-ballRad)) {
+    				if(x > paddleX && x < paddleX + paddleWidth) {
+        				dy = -dy;
+        			}
+				} else if(y + dy > canv.height-ballRad) {
+					if(gameOver == false) {
+				    	//window.alert("fuck you woody");
+				    	gameOver = true;
+					}
+				}
+				requestAnimationFrame(drawGame);
+			}
+
+			$(window).on('load', function() {
+				//REPLACE WITH EYE TRACK LATER
+				//document.addEventListener("mousemove", mouseMoveHandler, false);
+				changeCanvasSize();
+
+				canv = document.getElementById("gameCanvas");
+				ctx = canv.getContext("2d");
+				x = 50;
+				y = canv.height / 2;
+				paddleX = (canv.width-paddleWidth)/2;
+				drawGame();
+			})
+
+		</script>
+	</head>
+	<body>
+		<canvas id="gameCanvas" height = "300px" width = "200px"></canvas> 
+	</body>
+</html>

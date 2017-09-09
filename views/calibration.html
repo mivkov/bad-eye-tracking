@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>test</title>
+		<meta charset = "utf-8"/>
+		<link rel="stylesheet" type="text/css" href="/css/gameScreen.css">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+			var canv;
+			var ctx;
+
+			var numberOfClicks = 0;
+
+			var circleRadius = 15;
+			var sideOffset = 30;
+
+			function changeCanvasSize() {
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				var canv = document.getElementById("calibration");
+				canv.height = h - 15;
+				canv.width = w - 15;
+			}
+
+			function drawCalibPoints() {
+				var x1 = canv.width - sideOffset;
+				var y1 = canv.height - sideOffset;
+
+				var x2 = canv.width / 2;
+				var y2 = canv.height / 2 - circleRadius;
+
+				var x3 = sideOffset;
+				var y3 = sideOffset;
+
+				ctx.beginPath();
+				ctx.arc(x1, y1, circleRadius, 0, Math.PI*2);
+				ctx.fillStyle = '#85C1E9';
+				ctx.fill();
+				ctx.closePath();
+
+				ctx.beginPath();
+				ctx.arc(x2, y2, circleRadius, 0, Math.PI*2);
+				ctx.fillStyle = '#85C1E9';
+				ctx.fill();
+				ctx.closePath();
+
+				ctx.beginPath();
+				ctx.arc(x3, y3, circleRadius, 0, Math.PI*2);
+				ctx.fillStyle = '#85C1E9';
+				ctx.fill();
+				ctx.closePath();
+			}
+
+			function getClickPosition(e) {
+			    var xPosition = e.clientX;
+			    var yPosition = e.clientY;
+			    $.ajax({
+					url: document.URL+"click",
+					type: "POST",
+					dataType: "json",
+					data: {x: JSON.stringify(xPosition), y: JSON.stringify(yPosition)},
+					complete: function() {
+						console.log('process complete');
+					},
+					success: function(responseJson) {
+					},
+					error: function() {
+						console.log('process error');
+					}
+				})
+				numberOfClicks++;
+			}
+
+			$(window).on('load', function() {
+				changeCanvasSize();
+
+				canv = document.getElementById("calibration");
+				ctx = canv.getContext('2d');
+				canv.addEventListener("click", getClickPosition, false);
+
+				drawCalibPoints();
+
+				ctx.font = "30px Arial";
+				ctx.fillStyle = '#909497'
+				ctx.fillText("Please look at the middle point, click on the point, then hold your gaze on the point for a few", 20, 80);
+				ctx.fillText("seconds before repeating the process with the other two points.", 20, 120);
+
+			})
+
+
+		</script>
+	</head>
+	<body>
+		<canvas id="calibration" height = "300px" width = "200px"></canvas> 
+		<form method="post" action="/game">
+			<input type="submit" id="submit" value="Submit">
+		</form>
+	</body>
+</html>
