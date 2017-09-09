@@ -24,8 +24,7 @@ var clicks = [];
 // html render engine
 app.set('view engine', 'ejs');
 
-
-//screen one, is the game canvas
+//screen one: the calibration screen
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, '/views/calibration.html'))
 })
@@ -35,6 +34,7 @@ app.post('/click', (request, response) => {
     console.log(clicks);
 })
 
+//screen two: the actual game
 app.post('/game', (request, response) => {
     response.sendFile(path.join(__dirname, '/views/test.html'))
     pyshell.on('message', function(message) {
@@ -42,6 +42,7 @@ app.post('/game', (request, response) => {
     })
 })
 
+//responds every frame with x coordinates of eye gaze
 app.get('/game/data', (request, response) => {
     response.json({xcoord: latestXValue});
 })

@@ -6,6 +6,7 @@
 		<link rel="stylesheet" type="text/css" href="/css/gameScreen.css">
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 		<script>
+			//changes the size of the canvas based on the window size
 			function changeCanvasSize() {
 				var w = window.innerWidth;
 				var h = window.innerHeight;
@@ -14,6 +15,7 @@
 				canv.width = w - 15;
 			}
 
+			//number of bricks and each respective size/spacing
 			var brickRowCount = 3;
 			var brickColumnCount = 15;
 			var brickWidth = 75;
@@ -22,6 +24,7 @@
 			var brickOffsetTop = 30;
 			var brickOffsetLeft = 30;
 
+			//constructs a 2D array of bricks
 			var bricks = [];
 			for(c=0; c<brickColumnCount; c++) {
 			    bricks[c] = [];
@@ -30,6 +33,7 @@
 			    }
 			}
 
+			//draws the bricks
 			function drawBricks() {
 			    for(c=0; c<brickColumnCount; c++) {
 			        for(r=0; r<brickRowCount; r++) {
@@ -67,6 +71,7 @@
 
 			var requestSent = false;
 
+			//draws the ball that bounces around
 			function drawBall() {
 				ctx.beginPath();
 				ctx.arc(x, y, ballRad, 0, Math.PI*2);
@@ -75,6 +80,7 @@
 				ctx.closePath();
 			}
 
+			//draws the paddle that the user controls
 			function drawPaddle() {
 			    ctx.beginPath();
 			    ctx.rect(paddleX, canv.height-paddleHeight-paddleOffset, paddleWidth, paddleHeight);
@@ -83,6 +89,8 @@
 			    ctx.closePath();
 			}
 
+			//calculates how far the paddle should move based on how far it is from the
+			//location opposite of where the player is looking
 			function calcPaddleVelocity() {
 				var displacement = (2*Math.abs(eyeX - paddleX) / (canv.width / 10)) + 1;
 				if(paddleX < eyeX && paddleX < canv.width-paddleWidth) {
@@ -92,6 +100,7 @@
 				}
 			}
 
+			//detects if ball collided with blocks, and updates the block's status
 			function collisionDetection() {
 			    for(c=0; c<brickColumnCount; c++) {
 			        for(r=0; r<brickRowCount; r++) {
@@ -106,10 +115,13 @@
 			    }
 			}
 
+			//handles mouse location-IS NOT USED, was used for debugging
 			function mouseMoveHandler(e) {
 				eyeX = canv.width - e.clientX;
 			}
 
+			//sends an ajax request to the server asking for the x coordinate of where to
+			//move the paddle
 			function requestEye(callback) {
 				$.ajax({
 					url: document.URL+"/data",
@@ -130,8 +142,7 @@
 				})
 			}
 
-			var runRequest = false;
-
+			//draws all the aspects of the game and calculates wall collision
 			function drawGame() {
 				ctx.clearRect(0, 0, canv.width, canv.height);
 
@@ -167,6 +178,7 @@
 				requestAnimationFrame(drawGame);
 			}
 
+			//initializes the game screen
 			$(window).on('load', function() {
 				//REPLACE WITH EYE TRACK LATER
 				//document.addEventListener("mousemove", mouseMoveHandler, false);

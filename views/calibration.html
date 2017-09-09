@@ -9,11 +9,10 @@
 			var canv;
 			var ctx;
 
-			var numberOfClicks = 0;
-
 			var circleRadius = 15;
 			var sideOffset = 30;
 
+			//changes the size of the canvas based on window size
 			function changeCanvasSize() {
 				var w = window.innerWidth;
 				var h = window.innerHeight;
@@ -22,6 +21,8 @@
 				canv.width = w - 15;
 			}
 
+			//draws the three points on the canvas that are the calibration points
+            //for the eye tracking software
 			function drawCalibPoints() {
 				var x1 = canv.width - sideOffset;
 				var y1 = canv.height - sideOffset;
@@ -51,6 +52,7 @@
 				ctx.closePath();
 			}
 
+			//returns the position of a click-IS NOT USED
 			function getClickPosition(e) {
 			    var xPosition = e.clientX;
 			    var yPosition = e.clientY;
@@ -68,9 +70,9 @@
 						console.log('process error');
 					}
 				})
-				numberOfClicks++;
 			}
 
+			//changes the canvas size and draws points/instructions for the calibration phase
 			$(window).on('load', function() {
 				changeCanvasSize();
 
